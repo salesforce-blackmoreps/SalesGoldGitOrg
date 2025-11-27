@@ -1,0 +1,144 @@
+<template>
+  <div class="container full_height-wrapper">
+    <!-- Header Section -->
+    <div class="header">
+      <img class="logo-image" src={imageURL} alt="Company Logo" />
+
+      <div class="top-buttons">
+        <button class="help-btn">Help</button>
+        <button class="finish-btn">Finish Later</button>
+      </div>
+    </div>
+
+    <!-- Body Section -->
+    <div class="body">
+      <!-- Sidebar Menu -->
+      <div class="sidebar">        
+        <template for:each={sections} for:item="item">
+          <button key={item.Id} class={item.sidebarButtonClass} data-id={item.Id} onclick={sectionClick}>{item.Name}</button>
+        </template>
+      </div>
+
+      <!-- Main Content -->
+      <div class="content">
+        <h2>Account Setup</h2>
+
+        <div class="section-progress">
+          <label>Section Progress:</label>
+          <div class="progress-bar">
+            <div class="progress"></div>
+          </div>
+          <span class="progress-percent">0.00%</span>
+        </div>
+
+        <div class="section_right">
+          <template if:true={responses}>
+            <template for:each={responses} for:item="resp" for:index="index">
+                <!-- When the answer type is Picklist-->
+              <template if:true={resp.IsEmbedded}>
+                <div key={resp.field} class="question-block">
+                  <!-- Heading Text -->
+                  <div class="slds-row">
+                    <lightning-formatted-rich-text value={resp.question1} style="display: block;"></lightning-formatted-rich-text>
+                  </div>
+                </div>
+              </template>
+                
+              <!-- When the answer type is Picklist-->
+              <template if:true={resp.IsRadio}>
+                <div key={resp.field} class="question-block">
+                  <!-- Heading Text -->
+                  <div class="slds-row">
+                    <lightning-formatted-rich-text value={resp.question1} style="display: block;"></lightning-formatted-rich-text>
+                  </div>
+                  <!-- Radio Input -->
+                  <div class="slds-row slds-m-top_small">
+                    <template for:each={resp.responseChoices} for:item="choice" for:index="index2">
+                      <lightning-input key={choice.responseChoiceId} type="radio" name={resp.resoponseId}
+                        label={choice.value} value={choice.value}>
+                      </lightning-input>
+                    </template>
+                  </div>
+                </div>
+              </template>
+              
+              <!-- When the answer type is text-->
+              <template if:true={resp.IsText}>
+                <div key={resp.field} class="question-block">
+                  <!-- Heading Text -->
+                  <div class="slds-col">
+                    <lightning-formatted-rich-text value={resp.question1}></lightning-formatted-rich-text>
+                  </div>
+                  <!-- Input Field -->
+                  <div class="slds-col">
+                    <template for:each={resp.responseChoices} for:item="choice" for:index="index2">
+                      <lightning-input class="text_fld-size" key={choice.responseChoiceId} variant="label-hidden" value={choice.value}
+                        type="text">
+                      </lightning-input>
+                    </template>
+                  </div>
+                </div>
+              </template>
+
+              <!-- When the answer type is Multi-Select -->
+              <template if:true={resp.IsCheckbox}>
+                <div key={resp.field} class="question-block">
+                  <div class="slds-row">
+                    <lightning-formatted-rich-text value={resp.question1}></lightning-formatted-rich-text>
+                  </div>
+                  <div class="slds-row slds-m-top_small">
+                    <template for:each={resp.responseChoices} for:item="choice" for:index="index2">
+                      <lightning-input key={choice.responseChoiceId} type="checkbox" name={resp.responseChoiceId}
+                        label={choice.value} value={choice.value}>
+                      </lightning-input>
+                    </template>
+                  </div>
+                </div>
+              </template>
+
+              <!-- When the answer type is RichText -->
+              <template if:true={resp.IsRichText}>
+                <div key={resp.field} class="question-block">
+                  <div class="slds-col">
+                    <lightning-formatted-rich-text value={resp.question1}></lightning-formatted-rich-text>
+                  </div>
+                  <div class="slds-col">
+                    <template for:each={resp.responseChoices} for:item="choice" for:index="index2">
+                      <lightning-input-rich-text key={choice.responseChoiceId} variant="label-hidden"
+                        value={choice.value} class="slds-m-top_x-small">
+                      </lightning-input-rich-text>
+                    </template>
+                  </div>
+                </div>
+              </template>
+
+              <!-- When the answer type is text-->
+              <!--<template if:false={resp.IsText}>
+                <lightning-formatted-rich-text value={resp.question1} key={resp.field}></lightning-formatted-rich-text>   
+                  <template for:each={resp.responseChoices} for:item="choice" for:index="index2">              
+                  <p key={choice.responseChoiceId}><lightning-formatted-rich-text value={choice.value}></lightning-formatted-rich-text></p>
+                </template>          
+              </template>-->
+            </template>
+          </template>
+          <!--<template if:false={responses}>
+          <p>No questions loaded.</p>
+        </template>-->
+        </div>
+
+        <div class="footer">
+          <button class="back-btn">Back</button>
+          <button class="next-btn" onclick={handleSaveAndNext}>Save & Next</button>
+        </div>
+
+        <div class="onboarding-progress">
+          <label>Onboarding Progress:</label>
+          <div class="progress-bar">
+            <div class="progress"></div>
+          </div>
+          <span class="progress-percent">0.00%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

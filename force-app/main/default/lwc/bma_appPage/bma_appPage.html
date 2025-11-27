@@ -1,0 +1,50 @@
+<template>
+    <div class="container">
+        <template if:false={showSecondComponent}>
+            <lightning-card title="Select Account" icon-name="standard:account">       
+            
+            <div class="picker-box">
+                <lightning-record-picker
+                    label="Select Account"
+                    object-api-name="Account"
+                    onchange={handleAccountChange}
+                    >
+                </lightning-record-picker>
+            </div>
+
+            <template if:true={intakes}>
+                <div class="picker-box">
+                    <lightning-card title="Intakes of this account">
+                        <lightning-datatable
+                            key-field="id"
+                            data={intakes}
+                            columns={columns}
+                            onrowselection={handleRowSelection}
+                            max-row-selection = 1
+                            row-class={getRowClass}>
+                        </lightning-datatable>
+                    </lightning-card>
+                </div>                
+            </template>
+
+            <!-- Button wrapper -->
+            <div class="button-container">
+                <lightning-button 
+                    label="Next" 
+                    variant="brand"
+                    class="next-button"
+                    onclick={handleNext}>
+                </lightning-button>
+            </div>
+
+            <template if:true={error}>
+                <p class="error">{error}</p>
+            </template>
+        </lightning-card>
+        </template>
+        <!-- Conditionally render second component -->
+        <template if:true={showSecondComponent}>
+            <c-bma_-oppto-close project-id={selectedIntakeId}></c-bma_-oppto-close>
+        </template>
+    </div>    
+</template>

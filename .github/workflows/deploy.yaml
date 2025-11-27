@@ -1,0 +1,42 @@
+name: Deploy to client ORG environment Manually
+
+# The 'workflow_dispatch' event allows you to run this manually from the Actions tab
+on: 
+  workflow_dispatch:
+
+jobs:
+  Deploy:
+      runs-on: ubuntu-latest
+      environment: sffnoobs
+      steps:
+          - uses: actions/setup-node@v3
+            with:
+              node-version: '18'
+
+          - name: 'Checkout source code'
+            uses: actions/checkout@v3
+            with:
+              # fetch-depth 0 is safer for manual runs to ensure git history is available
+              fetch-depth: '0' 
+                
+          - name: 'Install sfdx'
+            run: npm install @salesforce/cli --global
+
+          - name: 'Installing sfdx git delta'
+            run: | 
+                echo Y | sfdx plugins:install sfdx-git-delta
+                sfdx plugins
+
+          # NOTE: This will calculate the delta of the very last commit 
+          # compared to the one before it on the branch you select.
+          - name: 'Create delta packages'
+            run: | 
+                mkdir changed-sources
+                sf sgd source delta --to "HEAD" --from "HEAD~1" --output changed-sources/ --generate-delta --source force-app/
+                echo "[INFO] Diff generated"
+                
+          - name: 'Deploy to environment with running all local tests'
+            run: |
+                echo "${{ secrets.SERVER_KEY }}" > server.key
+                sf org login jwt --username ${{ secrets.USER_NAME }} --jwt-key-file server.key --client-id ${{ secrets.CONSUMER_KEY }} --instance-url ${{ vars.INSTANCE_URL }} --set-default
+                sf project deploy start --source-dir force-app

@@ -1,8 +1,10 @@
-name: Deploy to client ORG environment Manually
+name: Deploy to client ORG environment From Apex
 
-# The 'workflow_dispatch' event allows you to run this manually from the Actions tab
+# CHANGE 1: Switch from workflow_dispatch to repository_dispatch
+# This allows the Apex Class to trigger it.
 on: 
-  workflow_dispatch:
+  repository_dispatch:
+    types: [deploy_trigger]
 
 jobs:
   Deploy:
@@ -16,27 +18,25 @@ jobs:
           - name: 'Checkout source code'
             uses: actions/checkout@v3
             with:
-              # fetch-depth 0 is safer for manual runs to ensure git history is available
+              # CHANGE 2: Use the branch sent from Salesforce Apex
+              ref: ${{ github.event.client_payload.branch || 'main' }}
               fetch-depth: '0' 
                 
           - name: 'Install sfdx'
             run: npm install @salesforce/cli --global
 
-          - name: 'Installing sfdx git delta'
-            run: | 
-                echo Y | sfdx plugins:install sfdx-git-delta
-                sfdx plugins
+          # REMOVED: sfdx-git-delta steps. 
+          # Reason: For an "Intake" button, you want to deploy the WHOLE app, 
+          # not just the lines of code changed in the last 5 minutes.
 
-          # NOTE: This will calculate the delta of the very last commit 
-          # compared to the one before it on the branch you select.
-          - name: 'Create delta packages'
-            run: | 
-                mkdir changed-sources
-                sf sgd source delta --to "HEAD" --from "HEAD~1" --output changed-sources/ --generate-delta --source force-app/
-                echo "[INFO] Diff generated"
-                
           - name: 'Deploy to environment with running all local tests'
             run: |
+                # Create the key file from the secret
                 echo "${{ secrets.SERVER_KEY }}" > server.key
+                
+                # Login
                 sf org login jwt --username ${{ secrets.USER_NAME }} --jwt-key-file server.key --client-id ${{ secrets.CONSUMER_KEY }} --instance-url ${{ vars.INSTANCE_URL }} --set-default
-                sf project deploy start --source-dir force-app
+                
+                # CHANGE 3: Deploy EVERYTHING in force-app
+                # Added --wait 30 to prevent timeouts on large deploys
+                sf project deploy start --source-dir force-app --wait 30
